@@ -77,3 +77,5 @@ render.yaml                      # Render blueprint configuration (autoDeploy: f
 requirements.txt                 # Pinned dependencies
 ruff.toml, pytest.ini            # Linter and test runner configurations
 ```
+
+<!-- Verified CI/CD & Render Deployment for Student ID: 2507227 -->

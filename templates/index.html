@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>target.py playground | SQA 2507227</title>
+<style>
+  body{font-family:system-ui,-apple-system,sans-serif;max-width:960px;margin:2rem auto;padding:0 1.2rem;background:#f4f6fb;color:#1e293b}
+  header{background:#1e3a8a;color:#fff;padding:1.2rem 1.5rem;border-radius:12px;margin-bottom:1.5rem;box-shadow:0 4px 12px rgba(30,58,138,.15)}
+  h1{margin:0 0 .3rem;font-size:1.6rem}
+  .meta{font-size:.9rem;color:#cbd5e1;margin-bottom:.3rem}
+  .sha{font-family:monospace;color:#93c5fd;font-size:.85rem}
+  .hint{background:#fff;padding:.8rem 1rem;border-radius:8px;border-left:4px solid #2563eb;font-size:.9rem;margin-bottom:1.5rem}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem}
+  .card{background:#fff;border-radius:10px;padding:1rem;border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+  .card h3{margin:0 0 .35rem;font-family:monospace;color:#1d4ed8}
+  .doc{font-size:.8rem;color:#64748b;min-height:2.4em;margin-bottom:.4rem}
+  input{width:100%;box-sizing:border-box;padding:.45rem .6rem;margin:.2rem 0;border:1px solid #cbd5e1;border-radius:6px;font-family:monospace}
+  button{margin-top:.45rem;padding:.45rem 1rem;border:0;border-radius:6px;background:#2563eb;color:#fff;font-weight:600;cursor:pointer}
+  button:hover{background:#1d4ed8}
+  .out{margin-top:.55rem;font-family:monospace;font-size:.88rem;word-break:break-all}
+  .ok{color:#15803d} .err{color:#b91c1c}
+</style>
+</head>
+<body>
+<header>
+  <h1>target.py playground</h1>
+  <div class="meta"><strong>James Anthony Purification</strong> &bull; Email: <strong>japurification16@gmail.com</strong> &bull; ID: <strong>2507227</strong></div>
+  <div class="sha">Deployed commit: <span id="sha">{{ sha }}</span></div>
+</header>
+<div class="hint">
+  Enter Python literals: <code>18</code>, <code>2.5</code>, <code>None</code>, <code>True</code>, <code>[1, 2]</code>, <code>{1, 2}</code>, <code>{"apple": 1}</code>, <code>(1, 2)</code>. Unquoted strings are passed directly as text.
+</div>
+<div class="grid">
+{% for f in funcs %}
+  <form class="card" data-fn="{{ f.name }}">
+    <h3>{{ f.name }}</h3>
+    <div class="doc">{{ f.doc }}</div>
+    {% for p in f.params %}<input name="{{ p }}" placeholder="{{ p }}">{% endfor %}
+    <button type="submit">Execute</button>
+    <div class="out"></div>
+  </form>
+{% endfor %}
+</div>
+<script>
+document.querySelectorAll("form.card").forEach(form => {
+  form.addEventListener("submit", async e => {
+    e.preventDefault();
+    const inputs = [...form.querySelectorAll("input")];
+    while (inputs.length && inputs[inputs.length-1].value === "") inputs.pop();
+    const args = inputs.map(i => i.value);
+    const out = form.querySelector(".out");
+    out.className = "out"; out.textContent = "running...";
+    let d;
+    try {
+      const r = await fetch(`/api/run/${form.dataset.fn}`, {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({args})});
+      d = await r.json();
+    } catch (err) {
+      out.className = "out err";
+      out.textContent = "Server unreachable. Ensure python app.py is running.";
+      return;
+    }
+    out.className = "out " + (d.ok ? "ok" : "err");
+    out.textContent = d.ok ? `→ ${d.result}  (${d.type})` : `${d.error}: ${d.message}`;
+  });
+});
+fetch("/health").then(r=>r.json()).then(d=>document.getElementById("sha").textContent=d.sha);
+</script>
+</body>
+</html>

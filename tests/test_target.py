@@ -492,3 +492,8 @@ def test_average_empty_raises(numbers):
 def test_average_wrong_type(numbers):
     with pytest.raises(TypeError):
         target.average(numbers)
+
+
+def test_demo_failing_check():
+    assert target.is_adult(17) is True
+

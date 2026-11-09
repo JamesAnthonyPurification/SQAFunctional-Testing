@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: sqafunctional-testing-2507227
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    autoDeploy: false
